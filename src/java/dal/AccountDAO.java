@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import model.Account;
-import model.Customer;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -30,13 +29,13 @@ public class AccountDAO {
     public final String CUSTOMERID = "CustomerID";
 
     private Connection con;
+    private DBContext dbContext;
 
     public AccountDAO() {
-
+        dbContext = new DBContext();
         con = new DBContext().connection;
-
     }
-
+    
     public List<Account> getAllAccount() {
         List<Account> list = new ArrayList<>();
         String sql = "select UserName, Password,role, c.CustomerID from Account a left outer join Customer c ON a.CustomerID = c.CustomerID";
@@ -72,7 +71,7 @@ public class AccountDAO {
         return list;
     }
 
-    public Account getAccountByUser(String user) {
+    public Account getAccountByUser(String user) throws SQLException{
         String sql = "select * from Account where UserName = ?";
         PreparedStatement ps = null;
         try {
@@ -104,7 +103,7 @@ public class AccountDAO {
         return null;
     }
 
-    public void insertAccount(Account a, int cusId) {
+    public boolean insertAccount(Account a, int cusId) throws SQLException{
         String sql = "Insert into Account(UserName, Password, CustomerID) values (?, ?, ?)";
         PreparedStatement ps = null;
 
@@ -114,6 +113,7 @@ public class AccountDAO {
             ps.setString(2, a.getPassword());
             ps.setInt(3, cusId);
             ps.executeUpdate();
+            return true;
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "", e);
         } finally {
@@ -125,12 +125,11 @@ public class AccountDAO {
             } catch (SQLException e) {
                 logger.log(Level.SEVERE, "", e);
             }
-
         }
-
+        return false;
     }
 
-    public void insertAccountAdmin(Account a) {
+    public void insertAccountAdmin(Account a) throws SQLException{
         String sql = "Insert into Account(UserName, Password, role) values (?, ?, ?)";
         PreparedStatement ps = null;
 
@@ -252,13 +251,35 @@ public class AccountDAO {
         return hashmap;
     }
 
-    public boolean deleteAccountByUser(String user) {
+    public boolean deleteAccountByUser(String user) throws SQLException{
         String sql = "DELETE FROM Account WHERE UserName = ?";
         PreparedStatement ps = null;
-
         try {
             ps = con.prepareStatement(sql);
             ps.setString(1, user);
+            ps.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "", e);
+        } finally {
+            try {
+                if (ps != null) {
+                    ps.close();
+                }
+            } catch (SQLException e) {
+                logger.log(Level.SEVERE, "", e);
+            }
+        }
+        return false;
+    }
+
+    public boolean changePassword(String user, String password) throws SQLException{
+        String sql = "Update Account SET [Password] = ? where UserName = ?";
+        PreparedStatement ps = null;
+        try {
+            ps = con.prepareStatement(sql);
+            ps.setString(1, password);
+            ps.setString(2, user);
             ps.executeUpdate();
             return true;
         } catch (SQLException e) {
@@ -273,36 +294,12 @@ public class AccountDAO {
                 logger.log(Level.SEVERE, "", e);
             }
 
-        }
-
-        return false;
-    }
-
-    public void changePassword(String user, String password) {
-        String sql = "Update Account SET [Password] = ? where UserName = ?";
-        PreparedStatement ps = null;
-        try {
-            ps = con.prepareStatement(sql);
-            ps.setString(1, password);
-            ps.setString(2, user);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, "", e);
-
-        } finally {
-            try {
-                if (ps != null) {
-                    ps.close();
-                }
-            } catch (SQLException e) {
-                logger.log(Level.SEVERE, "", e);
-            }
-
-        }
+        } return false;
 
     }
 
-    public static void main(String[] args) {
-
+    public static void main(String[] args) throws SQLException {
+          AccountDAO adb = new AccountDAO();
+          System.out.println(adb.changePassword("kha123","1234"));
     }
 }

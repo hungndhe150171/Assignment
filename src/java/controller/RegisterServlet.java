@@ -13,6 +13,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import model.Account;
 import model.Customer;
 
@@ -74,47 +77,51 @@ public class RegisterServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String firstName = request.getParameter("firstName");
-        String lastName = request.getParameter("lastName");
-        String gender = request.getParameter("gender");
-        String email = request.getParameter("email");
-        String phone = request.getParameter("phone");
-        String address = request.getParameter("address");
-        String user = request.getParameter("user");
-        String password = request.getParameter("password");
-        String confirm = request.getParameter("confirm");
-
-        Account a = AccountDAO.INSTANCE.getAccountByUser(user);
-        if (a == null) {
-            Account newAccount = new Account();
-            newAccount.setUserName(user);
-            newAccount.setPassword(password);
-            Customer c = new Customer();
-            c.setFirstName(firstName);
-            c.setLastName(lastName);
-            c.setEmail(email);
-            c.setPhone(phone);
-            c.setAddress(address);
-            c.setGender(gender);
-            int cusId = CustomerDAO.INSTANCE.insertCustomer(c);
-            AccountDAO.INSTANCE.insertAccount(newAccount, cusId);
-            CartDAO.INSTANCE.insertCart(cusId);
-            request.setAttribute("message", "Đăng ký thành công");
-            request.getRequestDispatcher("view/login.jsp").forward(request, response);
-
-        } else {
-            request.setAttribute("message", "Tài khoản đã tồn tại");
-            request.setAttribute("firstName", firstName);
-            request.setAttribute("lastName", lastName);
-            request.setAttribute("gender", gender);
-            request.setAttribute("email", email);
-            request.setAttribute("phone", phone);
-            request.setAttribute("address", address);
-            request.setAttribute("user", user);
-            request.setAttribute("password", password);
-            request.setAttribute("confirm", confirm);
-
-            request.getRequestDispatcher("view/register.jsp").forward(request, response);
+        try {
+            String firstName = request.getParameter("firstName");
+            String lastName = request.getParameter("lastName");
+            String gender = request.getParameter("gender");
+            String email = request.getParameter("email");
+            String phone = request.getParameter("phone");
+            String address = request.getParameter("address");
+            String user = request.getParameter("user");
+            String password = request.getParameter("password");
+            String confirm = request.getParameter("confirm");
+            
+            Account a = AccountDAO.INSTANCE.getAccountByUser(user);
+            if (a == null) {
+                Account newAccount = new Account();
+                newAccount.setUserName(user);
+                newAccount.setPassword(password);
+                Customer c = new Customer();
+                c.setFirstName(firstName);
+                c.setLastName(lastName);
+                c.setEmail(email);
+                c.setPhone(phone);
+                c.setAddress(address);
+                c.setGender(gender);
+                int cusId = CustomerDAO.INSTANCE.insertCustomer(c);
+                AccountDAO.INSTANCE.insertAccount(newAccount, cusId);
+                CartDAO.INSTANCE.insertCart(cusId);
+                request.setAttribute("message", "Đăng ký thành công");
+                request.getRequestDispatcher("view/login.jsp").forward(request, response);
+                
+            } else {
+                request.setAttribute("message", "Tài khoản đã tồn tại");
+                request.setAttribute("firstName", firstName);
+                request.setAttribute("lastName", lastName);
+                request.setAttribute("gender", gender);
+                request.setAttribute("email", email);
+                request.setAttribute("phone", phone);
+                request.setAttribute("address", address);
+                request.setAttribute("user", user);
+                request.setAttribute("password", password);
+                request.setAttribute("confirm", confirm);
+                
+                request.getRequestDispatcher("view/register.jsp").forward(request, response);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(RegisterServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }

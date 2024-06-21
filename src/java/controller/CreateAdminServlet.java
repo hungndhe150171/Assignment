@@ -12,6 +12,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import model.Account;
 
 /**
@@ -72,16 +75,20 @@ public class CreateAdminServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String user = request.getParameter("adminAccount");
-        String password = request.getParameter("password");
-        Account a = new Account();
-        a.setUserName(user);
-        a.setPassword(password);
-        a.setRole(0);
-        AccountDAO.INSTANCE.insertAccountAdmin(a);
-        HttpSession session = request.getSession();
-        session.setAttribute("messCreate", "Tạo quản trị viên thành công");
-        response.sendRedirect("adminHome");
+        try {
+            String user = request.getParameter("adminAccount");
+            String password = request.getParameter("password");
+            Account a = new Account();
+            a.setUserName(user);
+            a.setPassword(password);
+            a.setRole(0);
+            AccountDAO.INSTANCE.insertAccountAdmin(a);
+            HttpSession session = request.getSession();
+            session.setAttribute("messCreate", "Tạo quản trị viên thành công");
+            response.sendRedirect("adminHome");
+        } catch (SQLException ex) {
+            Logger.getLogger(CreateAdminServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
     }
 

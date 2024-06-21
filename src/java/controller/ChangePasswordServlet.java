@@ -13,6 +13,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -68,12 +71,16 @@ public class ChangePasswordServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        String user = request.getParameter("user");
-        String newPass = request.getParameter("newPass");
-        HttpSession session = request.getSession();
-        AccountDAO.INSTANCE.changePassword(user, newPass);
-        session.setAttribute("messChange", "Thay đổi mật khẩu thành công");
-        response.sendRedirect("home");
+        try {
+            String user = request.getParameter("user");
+            String newPass = request.getParameter("newPass");
+            HttpSession session = request.getSession();
+            AccountDAO.INSTANCE.changePassword(user, newPass);
+            session.setAttribute("messChange", "Thay đổi mật khẩu thành công");
+            response.sendRedirect("home");
+        } catch (SQLException ex) {
+            Logger.getLogger(ChangePasswordServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
           
     }
 

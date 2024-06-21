@@ -12,6 +12,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import model.Account;
 
 /**
@@ -60,7 +63,12 @@ public class ChangePassAdminServlet extends HttpServlet {
             throws ServletException, IOException {
         String admin = request.getParameter("admin");
         if (admin != null) {
-            Account a = AccountDAO.INSTANCE.getAccountByUser(admin);
+            Account a = null;
+            try {
+                a = AccountDAO.INSTANCE.getAccountByUser(admin);
+            } catch (SQLException ex) {
+                Logger.getLogger(ChangePassAdminServlet.class.getName()).log(Level.SEVERE, null, ex);
+            }
             request.setAttribute("admin", a);
             request.getRequestDispatcher("view/adminInfo.jsp").forward(request, response);
         } else {
@@ -80,12 +88,16 @@ public class ChangePassAdminServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String admin = request.getParameter("user");
-        String password = request.getParameter("newPass");
-        HttpSession session = request.getSession();
-        AccountDAO.INSTANCE.changePassword(admin, password);
-        session.setAttribute("messChange", "Thay đổi mật khẩu thành công");
-        response.sendRedirect("adminHome");
+        try {
+            String admin = request.getParameter("user");
+            String password = request.getParameter("newPass");
+            HttpSession session = request.getSession();
+            AccountDAO.INSTANCE.changePassword(admin, password);
+            session.setAttribute("messChange", "Thay đổi mật khẩu thành công");
+            response.sendRedirect("adminHome");
+        } catch (SQLException ex) {
+            Logger.getLogger(ChangePassAdminServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
